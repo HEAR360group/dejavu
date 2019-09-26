@@ -3,8 +3,9 @@ import fnmatch
 import numpy as np
 from pydub import AudioSegment
 from pydub.utils import audioop
-import wavio
+import dejavu.wavio as wavio
 from hashlib import sha1
+import dejavu.shared
 
 def unique_hash(filepath, blocksize=2**20):
     """ Small function to generate a hash to uniquely generate
@@ -34,6 +35,21 @@ def find_files(path, extensions):
                 yield (p, extension)
 
 
+#def validate_audio_file(filename):
+#    try:
+#        audiofile = AudioSegment.from_file(filename)
+#        if audiofile.channels >= 3:
+#            return True
+#        else:
+#            dejavu.shared.UITEXTLOGGER.emit("Error, please make sure that the audio file has more than 3 channels")
+#            print("Error, please make sure that the audio file has more than 3 channels")
+#            return False
+#    except audioop.error as e:
+#        dejavu.shared.UITEXTLOGGER.emit("Error, " + e.output)
+#        print("Error, " + e.output)
+#        return False
+        
+
 def read(filename, limit=None):
     """
     Reads any file supported by pydub (ffmpeg) and returns the data contained
@@ -56,7 +72,9 @@ def read(filename, limit=None):
         data = np.fromstring(audiofile._data, np.int16)
 
         channels = []
-        for chn in xrange(audiofile.channels):
+#        for chn in range(3):
+#            channels.append(data[chn::audiofile.channels])
+        for chn in range(audiofile.channels):
             channels.append(data[chn::audiofile.channels])
 
         fs = audiofile.frame_rate

@@ -3,5 +3,10 @@ wav
 mp3
 *.wav
 *.mp3
+*.m4a
 .DS_Store
 *.cnf
+*.db
+build/
+dist/
+ffmpeg
