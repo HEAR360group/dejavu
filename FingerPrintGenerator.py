@@ -21,17 +21,30 @@ class MyThread(QtCore.QThread):
         dejavu.shared.UITEXTLOGGER = self.updated;
         dejavu.shared.DATABASE_FILE = self.outputFilePath  
 
-#        self.updated.emit("Converting " + self.inputFilePath + " to 16bit 3 channels PCM")
+        self.updated.emit("Converting " + self.inputFilePath + " to 48KHz 16bit PCM")
+        cmd48k = shlex.split("./ffmpeg -i " + self.inputFilePath + " -ar 48000 -c:a pcm_s16le temp48k.wav -y")
+        cmd44k = shlex.split("./ffmpeg -i " + self.inputFilePath + " -ar 44100 -c:a pcm_s16le temp44k.wav -y")
 #        cmd = shlex.split("./ffmpeg -i " + self.inputFilePath + " -af \"pan=2.1|c0=c0|c1=c1|c2=c2\" temp.wav -y")
-##        command = "-i " + self.inputFilePath + " -af \"pan=2.1c0|c1=c1|c2=c2\" temp.wav"
-#        try:
-#            subprocess.check_output(cmd)
-#        except subprocess.CalledProcessError as e:
-#            self.updated.emit("Error, " + e.output)
-#            self.pushButton.setEnabled(True)
-#            return
-#            
-#        self.updated.emit("Finished converting format for " + self.inputFilePath) 
+#        command = "-i " + self.inputFilePath + " -af \"pan=2.1c0|c1=c1|c2=c2\" temp.wav"
+        try:
+            subprocess.check_output(cmd48k)
+        except subprocess.CalledProcessError as e:
+            self.updated.emit("Error, " + e.output)
+            self.pushButton.setEnabled(True)
+            return
+        
+        self.updated.emit("Finished converting 48KHz for " + self.inputFilePath) 
+        
+        self.updated.emit("Converting " + self.inputFilePath + " to 44.1KHz 16bit PCM")
+        
+        try:
+            subprocess.check_output(cmd44k)
+        except subprocess.CalledProcessError as e:
+            self.updated.emit("Error, " + e.output)
+            self.pushButton.setEnabled(True)
+            return
+            
+        self.updated.emit("Finished converting 44.1KHz for " + self.inputFilePath) 
         
 #        # do some functionality
         djv = Dejavu({})
@@ -39,7 +52,13 @@ class MyThread(QtCore.QThread):
         #clear DB
         djv.empty_db()
         
-        djv.fingerprint_file(self.inputFilePath)
+        djv.fingerprint_file("temp48k.wav")
+        
+        self.updated.emit("Finished finger print generation for 48KHz for " + self.inputFilePath) 
+        
+        djv.fingerprint_file("temp44k.wav")
+        
+        self.updated.emit("Finished finger print generation for 44.1KHz for " + self.inputFilePath) 
         
         self.pushButton.setEnabled(True)
         self.spinBox.setEnabled(True)
@@ -51,15 +70,13 @@ class Ui_Form(object):
         self.plainTextEdit.appendPlainText(text);
         if "Converting " in text:
             self.progressBar.setValue(0)
-        elif "Finished converting format for " in text:
+        elif "Finished converting 48KHz for " in text:
             self.progressBar.setValue(20)
-        elif "Finished channel 1/3 for" in text:
+        elif "Finished converting 44.1KHz for " in text:
             self.progressBar.setValue(40)
-        elif "Finished channel 2/3 for" in text:
-            self.progressBar.setValue(60)  
-        elif "Finished channel 3/3 for" in text:
-            self.progressBar.setValue(80)
-        elif "Finished saving finger prints to Database for" in text:
+        elif "Finished finger print generation for 48KHz" in text:
+            self.progressBar.setValue(70)  
+        elif "Finished finger print generation for 44.1KHz" in text:
             self.progressBar.setValue(100)
     
     def openFileNameDialog(self):
@@ -150,7 +167,7 @@ class Ui_Form(object):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Hear360 Finger Print Generator"))
         self.label.setText(_translate("Form", "PEAK NEIGHBORHOOD SIZE:"))
-        self.pushButton.setText(_translate("Form", "Step1: Select a PCM audio file (16bit) to generate finger prints"))
+        self.pushButton.setText(_translate("Form", "Step1: Select a PCM audio file to generate finger prints"))
         self.pushButton_2.setText(_translate("Form", "Step 2: Select the path for saving the SQLite database of finger prints"))
 
 
