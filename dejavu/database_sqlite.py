@@ -77,6 +77,14 @@ class SQLiteDatabase(Database):
         FINGERPRINTS_TABLENAME, Database.FIELD_HASH,
         Database.FIELD_SONG_ID, Database.FIELD_OFFSET
     )
+        
+    CREATE_FINGERPRINTS_TABLE_INDEX = """
+        CREATE INDEX IF NOT EXISTS `%s%s` ON %s (
+             `%s`
+    );""" % (
+        FINGERPRINTS_TABLENAME, Database.FIELD_HASH,
+        FINGERPRINTS_TABLENAME, Database.FIELD_HASH
+    )
 
     CREATE_SONGS_TABLE = """
         CREATE TABLE IF NOT EXISTS `%s` (
@@ -100,6 +108,10 @@ class SQLiteDatabase(Database):
     SELECT = """
         SELECT %s, %s FROM %s WHERE %s = UNHEX(%%s);
     """ % (Database.FIELD_SONG_ID, Database.FIELD_OFFSET, FINGERPRINTS_TABLENAME, Database.FIELD_HASH)
+    
+    SELECT_BY_SONG = """
+        SELECT %s, %s FROM %s WHERE %s = 
+    """ % (Database.FIELD_HASH, Database.FIELD_OFFSET, FINGERPRINTS_TABLENAME, Database.FIELD_SONG_ID)
 
     SELECT_MULTIPLE = """
         SELECT %s, %s, %s FROM %s WHERE upper(%s) IN (""" % (Database.FIELD_HASH, Database.FIELD_SONG_ID, Database.FIELD_OFFSET,
@@ -159,6 +171,7 @@ class SQLiteDatabase(Database):
         with self.cursor(charset="utf8") as cur:
             cur.execute(self.CREATE_SONGS_TABLE)
             cur.execute(self.CREATE_FINGERPRINTS_TABLE)
+            cur.execute(self.CREATE_FINGERPRINTS_TABLE_INDEX)
             cur.execute(self.DELETE_UNFINGERPRINTED)
 
     def empty(self):
@@ -259,6 +272,14 @@ class SQLiteDatabase(Database):
             for sid, offset in cur:
                 yield (sid, offset)
 
+    def get_fingerprints_by_song_id(self, sid):
+        query = self.SELECT_BY_SONG + str(sid) + ";"
+        
+        with self.cursor(charset="utf8") as cur:
+            cur.execute(query)
+            for row in cur:
+                yield row
+                
     def get_iterable_kv_pairs(self):
         """
         Returns all tuples in database.

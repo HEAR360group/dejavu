@@ -19,56 +19,40 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QLabel" name="label">
+        <widget class="QPushButton" name="btnAdd">
          <property name="text">
-          <string>PEAK_NEIGHBORHOOD_SIZE:</string>
+          <string>Add a SQLite Database file</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QSpinBox" name="spinBox">
-         <property name="autoFillBackground">
-          <bool>false</bool>
-         </property>
-         <property name="minimum">
-          <number>10</number>
-         </property>
-         <property name="maximum">
-          <number>50</number>
-         </property>
-         <property name="value">
-          <number>20</number>
+        <widget class="QPushButton" name="btnUndo">
+         <property name="text">
+          <string>Undo the last addition</string>
          </property>
         </widget>
        </item>
       </layout>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="btnCombine">
        <property name="text">
-        <string>Step1: Select an audio file (&gt;= 3 channels) to generate finger prints</string>
-       </property>
-       <property name="checkable">
-        <bool>false</bool>
+        <string>Combine into &quot;fingerprint.db&quot;</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_2">
-       <property name="text">
-        <string>Step 2: Select the path for saving the SQLite database of finger prints</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPlainTextEdit" name="plainTextEdit">
+      <widget class="QPlainTextEdit" name="lblInfo">
        <property name="readOnly">
         <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QProgressBar" name="progressBar">
+      <widget class="QProgressBar" name="pbConvert">
        <property name="value">
         <number>0</number>
        </property>

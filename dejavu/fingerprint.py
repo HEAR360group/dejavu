@@ -82,6 +82,9 @@ def fingerprint(channel_samples, Fs=DEFAULT_FS,
     arr2D[arr2D < 0.00000001] = 0.00000001
     arr2D = 10 * np.log10(arr2D)
 #    arr2D[arr2D == -np.inf] = 0  # replace infs with zeros
+    
+    fan_value=DEFAULT_FAN_VALUE
+    amp_min=DEFAULT_AMP_MIN
 
     # find local maxima
     local_maxima = get_2D_peaks(arr2D, plot=False, amp_min=amp_min)

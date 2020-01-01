@@ -122,6 +122,9 @@ class Database(object):
         hash: Part of a sha1 hash, in hexadecimal format
         """
         pass
+    
+    def get_fingerprints_by_song_id(self, sid):
+        pass
 
     @abc.abstractmethod
     def get_iterable_kv_pairs(self):

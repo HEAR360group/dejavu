@@ -96,6 +96,10 @@ class SQLDatabase(Database):
     SELECT = """
         SELECT %s, %s FROM %s WHERE %s = UNHEX(%%s);
     """ % (Database.FIELD_SONG_ID, Database.FIELD_OFFSET, FINGERPRINTS_TABLENAME, Database.FIELD_HASH)
+    
+    SELECT_BY_SONG = """
+        SELECT %s, %s, %s FROM %s WHERE %s = 
+    """ % (Database.FIELD_HASH, Database.FIELD_SONG_ID, Database.FIELD_OFFSET, FINGERPRINTS_TABLENAME, Database.FIELD_SONG_ID)
 
     SELECT_MULTIPLE = """
         SELECT HEX(%s), %s, %s FROM %s WHERE %s IN (%%s);
@@ -256,6 +260,14 @@ class SQLDatabase(Database):
             cur.execute(query)
             for sid, offset in cur:
                 yield (sid, offset)
+                
+    def get_fingerprints_by_song_id(self, sid):
+        query = self.SELECT_BY_SONG + str(sid) + ";"
+        
+        with self.cursor(cursor_type=DictCursor, charset="utf8") as cur:
+            cur.execute(query)
+            for row in cur:
+                yield row
 
     def get_iterable_kv_pairs(self):
         """

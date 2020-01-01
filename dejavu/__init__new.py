@@ -17,7 +17,7 @@ class Combinator(object):
     OFFSET_SECS = 'offset_seconds'
     
     max_sid = 0
-    all_songs = []
+    all_songs = {}
 #    all_hashes = []
     
     def __init__(self, config):
@@ -40,17 +40,33 @@ class Combinator(object):
         songs = self.db.get_songs()
         
         for song in songs:
-            newsong = {Database.FIELD_SONG_ID: song[Database.FIELD_SONG_ID] + self.max_sid,
-                       Database.FIELD_SONGNAME: filename + "_" + song[Database.FIELD_SONGNAME],
-                       Database.FIELD_FILE_SHA1: song[Database.FIELD_FILE_SHA1],
-                       "hashes": []}
+            keySong = song[Database.FIELD_SONGNAME]
+            if keySong in self.all_songs:
+                self.newsong = self.all_songs[keySong]
+            else:
+                self.newsong = {Database.FIELD_SONG_ID: song[Database.FIELD_SONG_ID],
+                           Database.FIELD_SONGNAME: song[Database.FIELD_SONGNAME],
+                           Database.FIELD_FILE_SHA1: song[Database.FIELD_FILE_SHA1],
+                           "hashes": {}}
             
             hashes = self.db.get_fingerprints_by_song_id(song[Database.FIELD_SONG_ID])
-            newsong["hashes"].extend(hashes)
             
-            self.all_songs.append(newsong)
+            existcount = len(self.newsong["hashes"].items())
+            totalcount = 0
+            actualcount = 0
+            for h in hashes:
+                totalcount = totalcount + 1
+                keyHash = h[Database.FIELD_HASH]
+                if keyHash not in self.newsong["hashes"]:
+                    actualcount = actualcount + 1
+                    self.newsong["hashes"][keyHash] = h[Database.FIELD_OFFSET]
+                    
+            print("hashes count:%d out of %d in %s of file:%s, from count:%d" % (actualcount, totalcount, keySong, filename, existcount))
+                        
+            self.all_songs[keySong] = self.newsong
+            
         
-        self.max_sid = self.max_sid + len(self.all_songs)
+#        self.max_sid = self.max_sid + len(self.all_songs)
         
 #        print("all_songs:%d, all_hashes:%d, max_sid:%d" % (len(self.all_songs), len(self.all_hashes), self.max_sid))
         
@@ -65,15 +81,17 @@ class Combinator(object):
         
         self.db.empty()
         
-        for song in self.all_songs:
+        for key in self.all_songs:
+            song = self.all_songs[key]
             sid = self.db.insert_song(song[Database.FIELD_SONGNAME], song[Database.FIELD_FILE_SHA1])
-            self.db.insert_hashes(sid, song["hashes"])
+            self.db.insert_hashes(sid, song["hashes"].items())
             self.db.set_song_fingerprinted(sid)
             
-            print("hashes type:%s" % (type(song["hashes"])))
-            print("hashes in %d:%d" % (sid, len(song["hashes"])))
+            print("hashes in %d:%d" % (sid, len(song["hashes"].items())))
             
         print("all_songs:%d" % (len(self.all_songs)))
+        
+        self.all_songs = {}
         
         return
 

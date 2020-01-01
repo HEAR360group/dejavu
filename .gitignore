@@ -1,4 +1,5 @@
 *.pyc
+.eggs/
 wav
 mp3
 *.wav
